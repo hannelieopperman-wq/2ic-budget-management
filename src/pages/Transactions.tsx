@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { Card, Select, EmptyState, Badge } from '../components/ui';
+import { Card, Select, EmptyState, Badge, Button } from '../components/ui';
 import { TransactionEditor } from '../components/transactions/TransactionEditor';
+import { AddTransactionModal } from '../components/transactions/AddTransactionModal';
 import { useApp } from '../store/AppStore';
 import { useCycleData } from '../hooks/useCycleData';
 import { isInCycle, formatDate } from '../utils/cycle';
@@ -27,6 +28,7 @@ export function Transactions() {
   const [dirFilter, setDirFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   const poolName = (id: string | null) => pools.find((p) => p.id === id)?.name ?? null;
   const accountName = (id: string) => accounts.find((a) => a.id === id)?.label ?? 'Unknown account';
@@ -48,7 +50,7 @@ export function Transactions() {
 
   return (
     <AppShell title="Transactions" subtitle={activeCycle.label}>
-      {/* Search + filter toggle */}
+      {/* Search + filter toggle + add */}
       <div className="mb-4 flex gap-2 animate-slide-up">
         <div className="relative flex-1">
           <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-plum-soft" />
@@ -66,6 +68,10 @@ export function Transactions() {
         >
           <SlidersHorizontal size={18} />
         </button>
+        <Button variant="primary" onClick={() => setAddOpen(true)} className="!h-[52px] shrink-0">
+          <Plus size={18} />
+          <span className="hidden sm:inline">Add</span>
+        </Button>
       </div>
 
       {showFilters && (
@@ -152,6 +158,7 @@ export function Transactions() {
       )}
 
       <TransactionEditor tx={editing} onClose={() => setEditing(null)} />
+      <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} />
     </AppShell>
   );
 }

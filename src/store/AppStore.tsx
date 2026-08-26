@@ -82,6 +82,7 @@ interface AppState {
   updateMember: (member: Member) => void;
   removeMember: (id: string) => void;
   commitImport: (txs: Transaction[]) => void;
+  addTransaction: (tx: Transaction, adjustAccountBalance: boolean) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -198,6 +199,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * Manually log a single transaction — the "no CSV available" fallback
+   * (cash, informal transfers, anything outside a bank export). Unlike
+   * import, this also optionally nudges the account balance directly by the
+   * transaction amount, since there's no bank statement balance to read.
+   */
+  const addTransaction = useCallback((tx: Transaction, adjustAccountBalance: boolean) => {
+    setTransactions((prev) => [tx, ...prev]);
+    if (tx.commitment_id) {
+      setCommitments((prev) => prev.map((c) => (c.id === tx.commitment_id ? { ...c, paid: true } : c)));
+    }
+    if (adjustAccountBalance) {
+      setAccounts((prev) =>
+        prev.map((a) =>
+          a.id === tx.account_id
+            ? { ...a, current_balance: a.current_balance + tx.amount, as_of_date: tx.date }
+            : a,
+        ),
+      );
+    }
+  }, []);
+
   const value: AppState = {
     authed,
     login: () => setAuthed(true),
@@ -243,6 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateMember,
     removeMember,
     commitImport,
+    addTransaction,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
