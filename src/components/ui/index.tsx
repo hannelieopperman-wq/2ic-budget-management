@@ -119,7 +119,7 @@ export function Modal({
   /** Rendered in a bar pinned to the bottom of the modal — always visible, no scrolling needed. */
   footer?: ReactNode;
 }) {
-  const [viewport, setViewport] = useState<{ height: number; top: number } | null>(null);
+  const [maxHeight, setMaxHeight] = useState<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -127,25 +127,18 @@ export function Modal({
     // modal sized against it can end up with its footer hidden behind the
     // keyboard the moment a text field is focused. visualViewport reports
     // the space actually left on screen, keyboard included — use that
-    // wherever it's available. On iOS specifically, fixed-position elements
-    // don't automatically shift when the keyboard opens, so the whole
-    // overlay's position is tracked too (via offsetTop), not just its height.
+    // wherever it's available.
     const vv = window.visualViewport;
-    const updateViewport = () => {
-      if (vv) setViewport({ height: vv.height, top: vv.offsetTop });
-      else setViewport({ height: window.innerHeight, top: 0 });
-    };
-    updateViewport();
-    vv?.addEventListener('resize', updateViewport);
-    vv?.addEventListener('scroll', updateViewport);
-    window.addEventListener('resize', updateViewport);
+    const updateHeight = () => setMaxHeight((vv ? vv.height : window.innerHeight) * 0.9);
+    updateHeight();
+    vv?.addEventListener('resize', updateHeight);
+    window.addEventListener('resize', updateHeight);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => {
-      vv?.removeEventListener('resize', updateViewport);
-      vv?.removeEventListener('scroll', updateViewport);
-      window.removeEventListener('resize', updateViewport);
+      vv?.removeEventListener('resize', updateHeight);
+      window.removeEventListener('resize', updateHeight);
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
@@ -153,16 +146,13 @@ export function Modal({
 
   if (!open) return null;
   return (
-    <div
-      className="fixed left-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={viewport ? { top: viewport.top, height: viewport.height, width: '100%' } : { inset: 0 }}
-    >
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-plum-ink/30 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        style={viewport ? { maxHeight: viewport.height * 0.9 } : undefined}
+        style={maxHeight ? { maxHeight } : undefined}
         className="relative flex w-full sm:max-w-lg flex-col bg-cream rounded-t-3xl sm:rounded-3xl shadow-lift
           animate-scale-in"
       >
