@@ -1,4 +1,4 @@
-import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, useEffect, useState } from 'react';
+import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, useEffect } from 'react';
 import { X, Inbox, AlertCircle, Loader2 } from 'lucide-react';
 import { assetUrl } from '../../utils/assetUrl';
 
@@ -119,55 +119,38 @@ export function Modal({
   /** Rendered in a bar pinned to the bottom of the modal — always visible, no scrolling needed. */
   footer?: ReactNode;
 }) {
-  const [maxHeight, setMaxHeight] = useState<number | null>(null);
-
   useEffect(() => {
     if (!open) return;
-    // window.innerHeight ignores the on-screen keyboard on mobile, so a
-    // modal sized against it can end up with its footer hidden behind the
-    // keyboard the moment a text field is focused. visualViewport reports
-    // the space actually left on screen, keyboard included — use that
-    // wherever it's available.
-    const vv = window.visualViewport;
-    const updateHeight = () => setMaxHeight((vv ? vv.height : window.innerHeight) * 0.9);
-    updateHeight();
-    vv?.addEventListener('resize', updateHeight);
-    window.addEventListener('resize', updateHeight);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      vv?.removeEventListener('resize', updateHeight);
-      window.removeEventListener('resize', updateHeight);
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-plum-ink/30 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        style={maxHeight ? { maxHeight } : undefined}
-        className="relative flex w-full sm:max-w-lg flex-col bg-cream rounded-t-3xl sm:rounded-3xl shadow-lift
-          animate-scale-in"
-      >
-        <div className="shrink-0 flex items-center justify-between border-b border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
-          <h2 className="font-serif text-xl text-plum-ink">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="rounded-full p-2 text-plum-soft hover:bg-blush-soft">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
-        {footer && (
-          <div className="shrink-0 border-t border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
-            {footer}
+    <div className="fixed inset-0 z-50 overflow-y-auto p-0 sm:p-4">
+      <div className="fixed inset-0 bg-plum-ink/30 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="relative flex min-h-full items-start justify-center sm:items-center">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          className="relative w-full sm:max-w-lg bg-cream rounded-t-3xl sm:rounded-3xl shadow-lift
+            animate-scale-in"
+        >
+          <div className="flex items-center justify-between rounded-t-3xl border-b border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
+            <h2 className="font-serif text-xl text-plum-ink">{title}</h2>
+            <button onClick={onClose} aria-label="Close" className="rounded-full p-2 text-plum-soft hover:bg-blush-soft">
+              <X size={20} />
+            </button>
           </div>
-        )}
+          <div className="p-6">{children}</div>
+          {footer && (
+            <div className="rounded-b-3xl border-t border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
+              {footer}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
