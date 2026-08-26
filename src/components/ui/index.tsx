@@ -1,4 +1,4 @@
-import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, useEffect } from 'react';
+import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, useEffect, useState } from 'react';
 import { X, Inbox, AlertCircle, Loader2 } from 'lucide-react';
 import { assetUrl } from '../../utils/assetUrl';
 
@@ -119,12 +119,21 @@ export function Modal({
   /** Rendered in a bar pinned to the bottom of the modal — always visible, no scrolling needed. */
   footer?: ReactNode;
 }) {
+  const [maxHeight, setMaxHeight] = useState<number | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    // Measure the real visible height in pixels instead of trusting the
+    // CSS vh unit, which some browsers miscalculate when maximized —
+    // that mismatch is what was pushing the footer off-screen.
+    const updateHeight = () => setMaxHeight(window.innerHeight * 0.9);
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => {
+      window.removeEventListener('resize', updateHeight);
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
@@ -138,8 +147,9 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        style={maxHeight ? { maxHeight } : undefined}
         className="relative flex w-full sm:max-w-lg flex-col bg-cream rounded-t-3xl sm:rounded-3xl shadow-lift
-          animate-scale-in max-h-[90vh]"
+          animate-scale-in"
       >
         <div className="shrink-0 flex items-center justify-between border-b border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
           <h2 className="font-serif text-xl text-plum-ink">{title}</h2>
