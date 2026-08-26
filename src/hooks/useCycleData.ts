@@ -12,7 +12,8 @@ import {
   unmappedCount,
   unbudgeted,
   upcomingCommitments,
-  incomeVariance,
+  computeIncomeExpected,
+  computeIncomeReceived,
 } from '../utils/calculations';
 import type { PoolView } from '../components/dashboard/PoolCard';
 
@@ -23,7 +24,7 @@ import type { PoolView } from '../components/dashboard/PoolCard';
  * visibility itself.
  */
 export function useCycleData() {
-  const { pools, commitments, transactions, accounts, activeCycle, activeMemberId } = useApp();
+  const { pools, commitments, transactions, accounts, incomeSources, activeCycle, activeMemberId } = useApp();
 
   return useMemo(() => {
     // Accounts visible in this view (shared accounts always included).
@@ -76,7 +77,14 @@ export function useCycleData() {
     const unmapped$ = unmappedTotal(visibleTransactions, activeCycle);
     const unmappedN = unmappedCount(visibleTransactions, activeCycle);
     const unbudgeted$ = unbudgeted(visiblePools, visibleTransactions, activeCycle);
-    const variance = incomeVariance(activeCycle);
+
+    // Computed live from Income Sources + actual transactions — not a static
+    // demo field — so entering real income actually drives the app's
+    // behaviour (warnings, insights), even though the figures stay masked
+    // wherever they're displayed.
+    const incomeExpected = computeIncomeExpected(incomeSources, accounts, activeMemberId);
+    const incomeReceived = computeIncomeReceived(transactions, pools, accounts, activeCycle, activeMemberId);
+    const variance = incomeReceived - incomeExpected;
 
     const overBudgetPools = poolViews.filter((v) => v.pct >= 1);
 
@@ -96,8 +104,10 @@ export function useCycleData() {
       unmappedTotal: unmapped$,
       unmappedCount: unmappedN,
       unbudgeted: unbudgeted$,
+      incomeExpected,
+      incomeReceived,
       variance,
       overBudgetPools,
     };
-  }, [pools, commitments, transactions, accounts, activeCycle, activeMemberId]);
+  }, [pools, commitments, transactions, accounts, incomeSources, activeCycle, activeMemberId]);
 }

@@ -1,5 +1,6 @@
-import type { Pool, Transaction, Commitment, Cycle } from '../types/budget';
+import type { Pool, Transaction, Commitment, Cycle, IncomeSource, Account } from '../types/budget';
 import { isInCycle, parseISO } from './cycle';
+import { isVisible, memberIdForAccount } from './members';
 
 // ---------------------------------------------------------------------------
 // Pure calculation helpers. The UI consumes clean numbers from here so that
@@ -8,6 +9,51 @@ import { isInCycle, parseISO } from './cycle';
 // ---------------------------------------------------------------------------
 
 const isExcluded = (pool: Pool | undefined): boolean => pool?.type === 'excluded';
+
+/** Identify the pool used to hold incoming salary/income transactions. */
+export function isIncomePool(pool: Pool | undefined): boolean {
+  return pool?.name.trim().toLowerCase() === 'income';
+}
+
+/**
+ * Expected income for a cycle, computed live from Income Sources rather than
+ * a static field — this is what actually reflects what someone enters in
+ * Settings. Filtered to whichever member's accounts are visible in the
+ * current view (shared/joint accounts always included).
+ */
+export function computeIncomeExpected(
+  incomeSources: IncomeSource[],
+  accounts: Account[],
+  activeMemberId: string,
+): number {
+  return incomeSources
+    .filter((s) => isVisible(memberIdForAccount(s.account_id, accounts), activeMemberId))
+    .reduce((sum, s) => sum + s.amount_expected, 0);
+}
+
+/**
+ * Income actually received in a cycle — sum of incoming transactions mapped
+ * to the Income pool, for whichever accounts are visible in the current view.
+ */
+export function computeIncomeReceived(
+  transactions: Transaction[],
+  pools: Pool[],
+  accounts: Account[],
+  cycle: Cycle,
+  activeMemberId: string,
+): number {
+  const incomePoolIds = new Set(pools.filter(isIncomePool).map((p) => p.id));
+  return transactions
+    .filter(
+      (t) =>
+        t.direction === 'in' &&
+        t.pool_id &&
+        incomePoolIds.has(t.pool_id) &&
+        isInCycle(t.date, cycle) &&
+        isVisible(memberIdForAccount(t.account_id, accounts), activeMemberId),
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+}
 
 /** Outgoing spend for a single pool within a cycle (excluded pools => 0). */
 export function spentThisCycle(pool: Pool, transactions: Transaction[], cycle: Cycle): number {
@@ -107,16 +153,12 @@ export function unmappedCount(transactions: Transaction[], cycle: Cycle): number
   return transactions.filter((t) => t.pool_id === null && isInCycle(t.date, cycle)).length;
 }
 
-export function incomeVariance(cycle: Cycle): number {
-  return cycle.income_received - cycle.income_expected;
-}
-
 /** Unallocated = expected income - sum of pool budgets (excluded pools skipped). */
-export function unallocated(cycle: Cycle, pools: Pool[]): number {
+export function unallocated(incomeExpected: number, pools: Pool[]): number {
   const allocated = pools
     .filter((p) => p.type !== 'excluded')
     .reduce((sum, p) => sum + p.monthly_budget, 0);
-  return cycle.income_expected - allocated;
+  return incomeExpected - allocated;
 }
 
 export function totalAllocated(pools: Pool[]): number {

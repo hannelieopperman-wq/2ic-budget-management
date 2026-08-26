@@ -34,7 +34,7 @@ export function Dashboard() {
 
   // Income warning: received < expected AND >= 3 days into cycle.
   const daysIn = daysSinceCycleStart(activeCycle);
-  const belowExpected = activeCycle.income_received < activeCycle.income_expected;
+  const belowExpected = data.incomeReceived < data.incomeExpected;
   const showIncomeWarning = belowExpected && daysIn >= 3;
 
   const alerts: AlertItem[] = [];

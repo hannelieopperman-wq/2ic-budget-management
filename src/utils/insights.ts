@@ -156,11 +156,11 @@ export function streakInsights(pools: Pool[], transactions: Transaction[], cycle
 }
 
 /** A richer, trend-aware version of the dashboard's simple income warning. */
-export function incomeTimingInsight(cycle: Cycle): Insight | null {
+export function incomeTimingInsight(cycle: Cycle, incomeExpected: number, incomeReceived: number): Insight | null {
   const totalDays = cycleLengthDays(cycle);
   const elapsed = Math.min(Math.max(daysSinceCycleStart(cycle), 0), totalDays);
   const pctElapsed = totalDays > 0 ? elapsed / totalDays : 0;
-  const pctReceived = cycle.income_expected > 0 ? cycle.income_received / cycle.income_expected : 1;
+  const pctReceived = incomeExpected > 0 ? incomeReceived / incomeExpected : 1;
 
   if (pctReceived >= 1) return null; // fully received, nothing to flag
   if (pctElapsed > 0.5 && pctReceived < 0.9) {

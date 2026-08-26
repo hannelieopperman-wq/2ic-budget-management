@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useApp } from '../store/AppStore';
 import { isInCycle } from '../utils/cycle';
 import { isVisible, memberIdForAccount } from '../utils/members';
-import { spentThisCycle } from '../utils/calculations';
+import { spentThisCycle, computeIncomeExpected, computeIncomeReceived } from '../utils/calculations';
 import type { Cycle } from '../types/budget';
 
 export interface PoolCyclePoint {
@@ -30,7 +30,7 @@ export interface IncomeTrendPoint {
  * respect the same never-show-a-real-salary-figure rule as the rest of the app.
  */
 export function useReportsData(cycleRange: Cycle[]) {
-  const { pools, transactions, accounts, members, activeMemberId } = useApp();
+  const { pools, transactions, accounts, members, incomeSources, activeMemberId } = useApp();
 
   return useMemo(() => {
     const visiblePools = pools.filter((p) => isVisible(p.member_id, activeMemberId) && p.type !== 'excluded');
@@ -91,11 +91,17 @@ export function useReportsData(cycleRange: Cycle[]) {
       if (shared > 0) memberBreakdown.push({ name: 'Shared', value: Math.round(shared * 100) / 100, color: '#D9BE86' });
     }
 
-    // Income tracking as a percentage only — never a rand figure.
-    const incomeTrend: IncomeTrendPoint[] = cycleRange.map((cycle) => ({
-      cycleLabel: cycle.label,
-      pctReceived: cycle.income_expected > 0 ? Math.round((cycle.income_received / cycle.income_expected) * 100) : 0,
-    }));
+    // Income tracking as a percentage only — never a rand figure. Expected
+    // comes from Income Sources (same for every cycle unless sources change);
+    // received is computed per cycle from actual incoming transactions.
+    const expectedForRange = computeIncomeExpected(incomeSources, accounts, activeMemberId);
+    const incomeTrend: IncomeTrendPoint[] = cycleRange.map((cycle) => {
+      const received = computeIncomeReceived(transactions, pools, accounts, cycle, activeMemberId);
+      return {
+        cycleLabel: cycle.label,
+        pctReceived: expectedForRange > 0 ? Math.round((received / expectedForRange) * 100) : 0,
+      };
+    });
 
     const totalSpentInRange = cycleRange.reduce(
       (sum, cycle) => sum + visiblePools.reduce((s, pool) => s + spentThisCycle(pool, visibleTransactions, cycle), 0),
@@ -113,5 +119,5 @@ export function useReportsData(cycleRange: Cycle[]) {
       visibleTransactions,
       latestCycle,
     };
-  }, [pools, transactions, accounts, members, activeMemberId, cycleRange]);
+  }, [pools, transactions, accounts, members, incomeSources, activeMemberId, cycleRange]);
 }

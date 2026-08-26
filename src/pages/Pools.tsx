@@ -21,7 +21,7 @@ const emptyPool = (): Pool => ({
 
 export function Pools() {
   const { pools, members, activeCycle, addPool, updatePoolEntry, removePool, reorderPools } = useApp();
-  const { poolViews } = useCycleData();
+  const { poolViews, incomeExpected } = useCycleData();
   const [editing, setEditing] = useState<Pool | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export function Pools() {
   const memberName = (id: string | null) => (id ? members.find((m) => m.id === id)?.name : null);
 
   const allocated = totalAllocated(pools);
-  const unalloc = unallocated(activeCycle, pools);
+  const unalloc = unallocated(incomeExpected, pools);
 
   const openNew = () => {
     setEditing(emptyPool());

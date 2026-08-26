@@ -22,7 +22,8 @@ import type { Cycle } from '../types/budget';
  */
 export function useInsights(cycleRange: Cycle[]): Insight[] {
   const { pools, activeCycle } = useApp();
-  const { visiblePools, visibleTransactions, visibleCommitments, chequeBalance } = useCycleData();
+  const { visiblePools, visibleTransactions, visibleCommitments, chequeBalance, incomeExpected, incomeReceived } =
+    useCycleData();
   const { topPools, poolTrend } = useReportsData(cycleRange);
 
   const poolLabel = (id: string | null) => pools.find((p) => p.id === id)?.name ?? 'Unmapped';
@@ -37,10 +38,10 @@ export function useInsights(cycleRange: Cycle[]): Insight[] {
     insights.push(...trendInsights(topPools, poolTrend));
     insights.push(...streakInsights(visiblePools, visibleTransactions, cycleRange));
 
-    const income = incomeTimingInsight(activeCycle);
+    const income = incomeTimingInsight(activeCycle, incomeExpected, incomeReceived);
     if (income) insights.push(income);
 
     return sortInsights(insights);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chequeBalance, visibleCommitments, activeCycle, visiblePools, visibleTransactions, topPools, poolTrend, cycleRange, pools]);
+  }, [chequeBalance, visibleCommitments, activeCycle, visiblePools, visibleTransactions, topPools, poolTrend, cycleRange, pools, incomeExpected, incomeReceived]);
 }
