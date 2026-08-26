@@ -27,7 +27,7 @@ const kindIcon: Record<AccountKind, typeof Wallet> = {
 };
 
 export function Import() {
-  const { transactions, commitments, rules, cycles, pools, accounts, commitImport } = useApp();
+  const { transactions, commitments, rules, cycles, pools, accounts, commitImport, updateAccount } = useApp();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
@@ -35,9 +35,15 @@ export function Import() {
   const [accountId, setAccountId] = useState<string | null>(null);
   const [prepared, setPrepared] = useState<PreparedTransaction[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<{ imported: number; duplicates: number; unmapped: number } | null>(null);
+  const [result, setResult] = useState<{
+    imported: number;
+    duplicates: number;
+    unmapped: number;
+    latestBalance: { balance: number; date: string } | null;
+  } | null>(null);
 
   const poolName = (id: string | null) => pools.find((p) => p.id === id)?.name ?? null;
+  const selectedAccount = accounts.find((a) => a.id === accountId);
 
   const runPreview = async () => {
     if (!file || !accountId) return;
@@ -47,7 +53,7 @@ export function Import() {
       const rows = extractRows(grid);
       const res = prepareImport(rows, accountId, transactions, commitments, rules, cycles);
       setPrepared(res.prepared);
-      setResult({ imported: res.imported, duplicates: res.duplicates, unmapped: res.unmapped });
+      setResult({ imported: res.imported, duplicates: res.duplicates, unmapped: res.unmapped, latestBalance: res.latestBalance });
       setStep(2);
     } finally {
       setProcessing(false);
@@ -55,8 +61,21 @@ export function Import() {
   };
 
   const confirmImport = () => {
-    const toCommit = prepared.filter((p) => !p.isDuplicate).map(({ isDuplicate: _isDuplicate, ...t }) => t);
+    const toCommit = prepared
+      .filter((p) => !p.isDuplicate)
+      .map(({ isDuplicate: _isDuplicate, balance: _balance, ...t }) => t);
     commitImport(toCommit);
+
+    // Bank CSVs almost always include a running balance column — use the
+    // most recent one to keep the account balance accurate automatically,
+    // instead of asking for a manual re-type every time.
+    if (result?.latestBalance && selectedAccount) {
+      updateAccount({
+        ...selectedAccount,
+        current_balance: result.latestBalance.balance,
+        as_of_date: result.latestBalance.date,
+      });
+    }
     setStep(4);
   };
 
@@ -157,6 +176,12 @@ export function Import() {
               {result.imported} transactions will be imported. {result.duplicates} duplicates will be skipped.
               {result.unmapped > 0 && ` ${result.unmapped} will need your attention.`}
             </p>
+            {result.latestBalance && selectedAccount && (
+              <p className="mt-3 rounded-2xl bg-sage/15 px-4 py-3 text-xs text-sage-deep">
+                {selectedAccount.label}'s balance will also update to {formatCurrency(result.latestBalance.balance)}{' '}
+                (as of {formatDate(result.latestBalance.date)}) — no manual entry needed.
+              </p>
+            )}
           </Card>
           <div className="flex justify-between">
             <Button variant="secondary" onClick={() => setStep(2)}>
@@ -180,6 +205,16 @@ export function Import() {
             <Badge tone="neutral">{result.duplicates} duplicates skipped</Badge>
             {result.unmapped > 0 && <Badge tone="coral">{result.unmapped} need attention</Badge>}
           </div>
+          {result.latestBalance ? (
+            <p className="mt-3 max-w-xs text-xs text-plum-soft">
+              {selectedAccount?.label} balance updated automatically — no need to check Settings.
+            </p>
+          ) : (
+            <p className="mt-3 max-w-xs text-xs text-plum-soft">
+              This file didn't include a balance column, so update the account balance manually in Settings
+              when you get a chance.
+            </p>
+          )}
           <div className="mt-6 flex gap-3">
             {result.unmapped > 0 && (
               <Button variant="secondary" onClick={() => navigate('/transactions?filter=unmapped')}>

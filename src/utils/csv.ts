@@ -145,6 +145,8 @@ export function extractRows(grid: RawGrid): ParsedRow[] {
 
 export interface PreparedTransaction extends Transaction {
   isDuplicate: boolean;
+  /** Running balance from the bank file at this row, if that column was present. */
+  balance?: number | null;
 }
 
 /** A transaction key for duplicate detection: date + amount + description. */
@@ -157,6 +159,8 @@ export interface PreparationResult {
   imported: number;
   duplicates: number;
   unmapped: number;
+  /** The most recent dated balance found in the file, if a Balance column was present — used to auto-update the account. */
+  latestBalance: { balance: number; date: string } | null;
 }
 
 /**
@@ -209,14 +213,27 @@ export function prepareImport(
       mapped_by,
       commitment_id,
       isDuplicate,
+      balance: row.balance,
     };
   });
 
   const nonDup = prepared.filter((p) => !p.isDuplicate);
+
+  // Find the balance as of the most recent dated row — that's the account's
+  // real current balance straight from the bank, no manual typing needed.
+  let latestBalance: { balance: number; date: string } | null = null;
+  for (const p of nonDup) {
+    if (p.balance == null) continue;
+    if (!latestBalance || p.date >= latestBalance.date) {
+      latestBalance = { balance: p.balance, date: p.date };
+    }
+  }
+
   return {
     prepared,
     imported: nonDup.length,
     duplicates: prepared.length - nonDup.length,
     unmapped: nonDup.filter((p) => p.pool_id === null && p.direction === 'out').length,
+    latestBalance,
   };
 }
