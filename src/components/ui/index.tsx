@@ -141,15 +141,15 @@ export function Modal({
         className="relative flex w-full sm:max-w-lg flex-col bg-cream rounded-t-3xl sm:rounded-3xl shadow-lift
           animate-scale-in max-h-[90vh]"
       >
-        <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
+        <div className="shrink-0 flex items-center justify-between border-b border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
           <h2 className="font-serif text-xl text-plum-ink">{title}</h2>
           <button onClick={onClose} aria-label="Close" className="rounded-full p-2 text-plum-soft hover:bg-blush-soft">
             <X size={20} />
           </button>
         </div>
-        <div className="overflow-y-auto p-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
         {footer && (
-          <div className="sticky bottom-0 shrink-0 border-t border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
+          <div className="shrink-0 border-t border-blush/50 bg-cream/95 px-6 py-4 backdrop-blur">
             {footer}
           </div>
         )}

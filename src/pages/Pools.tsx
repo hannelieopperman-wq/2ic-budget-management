@@ -204,7 +204,11 @@ export function Pools() {
               />
               <span className="text-sm text-plum">
                 Reserve as essential
-                <span className="block text-xs text-plum-soft">Remaining budget is held back from safe-to-spend.</span>
+                <span className="block text-xs text-plum-soft">
+                  Remaining budget is held back from safe-to-spend. Best for ongoing spending (Groceries,
+                  Petrol) — if this pool is really just one commitment (rent, insurance), that commitment
+                  is already reserved on its own, so marking the pool essential too would reserve it twice.
+                </span>
               </span>
             </label>
           </div>
