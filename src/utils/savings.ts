@@ -19,23 +19,26 @@ export interface SavingsHistoryPoint {
 /**
  * Build a chronological history for one savings account across a set of
  * cycles. Cycles with no logged entry are skipped (nothing to show yet).
+ * The very first logged cycle has no real prior balance to compare
+ * against, so it's treated as the starting baseline (zero growth) rather
+ * than guessing — growth becomes accurate from the second entry onward.
  */
 export function savingsHistory(
   accountId: string,
   entries: SavingsEntry[],
   cycles: Cycle[],
-  openingFallback: number,
 ): SavingsHistoryPoint[] {
   const sortedCycles = [...cycles].sort((a, b) => a.start_date.localeCompare(b.start_date));
   const byCycle = new Map(entries.filter((e) => e.account_id === accountId).map((e) => [e.cycle_id, e]));
 
   const points: SavingsHistoryPoint[] = [];
-  let priorClosing = openingFallback;
+  let priorClosing: number | null = null;
 
   for (const cycle of sortedCycles) {
     const entry = byCycle.get(cycle.id);
     if (!entry) continue;
-    const opening = priorClosing;
+    // First entry ever: no prior data point, so assume zero growth this cycle.
+    const opening = priorClosing ?? entry.closing_balance - entry.contribution;
     const growth = entry.closing_balance - opening - entry.contribution;
     points.push({
       cycleId: cycle.id,

@@ -29,7 +29,7 @@ export function Savings() {
   const [projectionMonths, setProjectionMonths] = useState(60);
 
   const history = useMemo(
-    () => (selected ? savingsHistory(selected.id, savingsEntries, cycles, selected.current_balance) : []),
+    () => (selected ? savingsHistory(selected.id, savingsEntries, cycles) : []),
     [selected, savingsEntries, cycles],
   );
   const summary = useMemo(
