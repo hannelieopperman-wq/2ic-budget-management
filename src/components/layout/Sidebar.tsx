@@ -9,11 +9,11 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex lg:w-64 xl:w-72 shrink-0 flex-col border-r border-blush/50 bg-cream-deep/60 px-4 py-6">
       <div className="mb-8 px-3">
-        <div className="flex items-start gap-2.5">
+        <div className="flex items-center gap-2.5">
           <img
             src={assetUrl('brand/couple-avatar.png')}
             alt=""
-            className="mt-0.5 h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-teal/20"
+            className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-teal/20"
           />
           <div className="min-w-0">
             <p className="font-serif text-lg leading-tight text-teal">
