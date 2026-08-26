@@ -1,4 +1,4 @@
-import { Home, Wallet, CalendarClock, Receipt, ListOrdered, Upload, Settings, CreditCard, BarChart3, BookOpen } from 'lucide-react';
+import { Home, Wallet, CalendarClock, Receipt, ListOrdered, Upload, Settings, CreditCard, BarChart3, BookOpen, PiggyBank } from 'lucide-react';
 
 export interface NavItem {
   to: string;
@@ -12,6 +12,7 @@ export const sidebarItems: NavItem[] = [
   { to: '/pools', label: 'Pools', icon: Wallet },
   { to: '/commitments', label: 'Commitments', icon: CalendarClock },
   { to: '/transactions', label: 'Transactions', icon: Receipt },
+  { to: '/savings', label: 'Savings', icon: PiggyBank },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
   { to: '/rules', label: 'Rules', icon: ListOrdered },
   { to: '/import', label: 'Import', icon: Upload },
@@ -29,6 +30,7 @@ export const bottomNavItems: NavItem[] = [
 
 // Items exposed under "More" on mobile
 export const moreItems: NavItem[] = [
+  { to: '/savings', label: 'Savings', icon: PiggyBank },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
   { to: '/rules', label: 'Rules', icon: ListOrdered },
   { to: '/import', label: 'Import', icon: Upload },

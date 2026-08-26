@@ -8,6 +8,7 @@ import type {
   Account,
   Cycle,
   IncomeSource,
+  SavingsEntry,
 } from '../types/budget';
 import {
   mockMembers,
@@ -18,6 +19,7 @@ import {
   mockAccounts,
   mockCycles,
   mockIncomeSources,
+  mockSavingsEntries,
   DEFAULT_CYCLE_ID,
   DEFAULT_HOUSEHOLD_NAME,
 } from '../data/mockData';
@@ -44,6 +46,7 @@ interface AppState {
   accounts: Account[];
   cycles: Cycle[];
   incomeSources: IncomeSource[];
+  savingsEntries: SavingsEntry[];
 
   activeCycleId: string;
   setActiveCycleId: (id: string) => void;
@@ -69,6 +72,9 @@ interface AppState {
   addIncomeSource: (source: IncomeSource) => void;
   updateIncomeSource: (source: IncomeSource) => void;
   removeIncomeSource: (id: string) => void;
+  addSavingsEntry: (entry: SavingsEntry) => void;
+  updateSavingsEntry: (entry: SavingsEntry) => void;
+  removeSavingsEntry: (id: string) => void;
   updateAccount: (account: Account) => void;
   addAccount: (account: Account) => void;
   removeAccount: (id: string) => void;
@@ -91,6 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>(mockAccounts);
   const [cycles] = useState<Cycle[]>(mockCycles);
   const [incomeSources, setIncomeSources] = useState<IncomeSource[]>(mockIncomeSources);
+  const [savingsEntries, setSavingsEntries] = useState<SavingsEntry[]>(mockSavingsEntries);
   const [activeCycleId, setActiveCycleId] = useState<string>(DEFAULT_CYCLE_ID);
   const [activeMemberId, setActiveMemberId] = useState<string>(ALL_MEMBERS);
 
@@ -150,6 +157,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const addSavingsEntry = useCallback((e: SavingsEntry) => setSavingsEntries((prev) => [...prev, e]), []);
+  const updateSavingsEntry = useCallback(
+    (e: SavingsEntry) => setSavingsEntries((prev) => prev.map((x) => (x.id === e.id ? e : x))),
+    [],
+  );
+  const removeSavingsEntry = useCallback(
+    (id: string) => setSavingsEntries((prev) => prev.filter((x) => x.id !== id)),
+    [],
+  );
+
   const updateAccount = useCallback(
     (account: Account) => setAccounts((prev) => prev.map((a) => (a.id === account.id ? account : a))),
     [],
@@ -195,6 +212,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     accounts,
     cycles,
     incomeSources,
+    savingsEntries,
     activeCycleId,
     setActiveCycleId,
     activeCycle,
@@ -215,6 +233,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addIncomeSource,
     updateIncomeSource,
     removeIncomeSource,
+    addSavingsEntry,
+    updateSavingsEntry,
+    removeSavingsEntry,
     updateAccount,
     addAccount,
     removeAccount,

@@ -7,6 +7,7 @@ import type {
   Account,
   Cycle,
   IncomeSource,
+  SavingsEntry,
 } from '../types/budget';
 
 // ---------------------------------------------------------------------------
@@ -94,6 +95,14 @@ export const mockAccounts: Account[] = [
     current_balance: -850.0,
     as_of_date: '2026-08-25',
     member_id: MEM_HIM,
+  },
+  {
+    id: 'acc_allan_gray',
+    label: 'Allan Gray',
+    kind: 'savings',
+    current_balance: 33450.0,
+    as_of_date: '2026-08-25',
+    member_id: null, // joint investment
   },
 ];
 
@@ -270,4 +279,13 @@ export const mockIncomeSources: IncomeSource[] = [
   { id: 'inc_salary', label: 'Salary', amount_expected: 42000, day_of_month: 25, recurring: true, account_id: 'acc_cheque' },
   { id: 'inc_side', label: 'Side income', amount_expected: 0, day_of_month: 28, recurring: false, account_id: 'acc_cheque' },
   { id: 'inc_salary_him', label: "Husband's Salary", amount_expected: 26000, day_of_month: 25, recurring: true, account_id: 'acc_cheque_him' },
+];
+
+// ---- Savings entries (Allan Gray, growth logged per cycle) -----------------
+// Demonstrates: contribution (money added) vs growth (investment return) —
+// closing_balance is the actual statement figure; growth is derived as
+// closing - previous closing - contribution.
+export const mockSavingsEntries: SavingsEntry[] = [
+  { id: 'sav_1', account_id: 'acc_allan_gray', cycle_id: 'cyc_2026_07', contribution: 1000, closing_balance: 31890.0 },
+  { id: 'sav_2', account_id: 'acc_allan_gray', cycle_id: 'cyc_2026_08', contribution: 1000, closing_balance: 33450.0 },
 ];

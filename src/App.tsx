@@ -9,6 +9,7 @@ import { Transactions } from './pages/Transactions';
 import { Rules } from './pages/Rules';
 import { Import } from './pages/Import';
 import { Reports } from './pages/Reports';
+import { Savings } from './pages/Savings';
 import { Guide } from './pages/Guide';
 import { Settings } from './pages/Settings';
 import { Accounts } from './pages/Accounts';
@@ -31,6 +32,7 @@ function AppRoutes() {
       <Route path="/rules" element={<RequireAuth><Rules /></RequireAuth>} />
       <Route path="/import" element={<RequireAuth><Import /></RequireAuth>} />
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
+      <Route path="/savings" element={<RequireAuth><Savings /></RequireAuth>} />
       <Route path="/guide" element={<RequireAuth><Guide /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
       <Route path="/accounts" element={<RequireAuth><Accounts /></RequireAuth>} />

@@ -99,3 +99,17 @@ export interface IncomeSource {
   /** The account this income lands in — ownership derives from here. */
   account_id: string;
 }
+
+/**
+ * One cycle's entry for a savings/investment account — logged manually
+ * (e.g. from a fund statement), since these balances aren't usually visible
+ * in a day-to-day bank CSV. Growth (investment return) is derived, not
+ * entered: closing_balance - previous closing_balance - contribution.
+ */
+export interface SavingsEntry {
+  id: string;
+  account_id: string; // must reference a savings-kind Account
+  cycle_id: string;
+  contribution: number; // amount added this cycle
+  closing_balance: number; // actual balance as of this cycle, from the statement
+}
