@@ -142,9 +142,27 @@ fine and will be ignored automatically.
 - Whether the mock cycle/account/pool numbers feel representative enough to
   judge the UI, given real salary and balances are intentionally never shown.
 
-## Phase 2 (not started)
+## Phase 2 (schema ready, wiring not started)
 
-Supabase Auth, Postgres, and Row Level Security, replacing
-`src/services/dataService.ts`'s in-memory functions with real calls, wiring
-`src/services/supabase.ts`, and connecting the CSV import + mapping engine to
-persisted data. This phase will be requested separately.
+The database schema lives at [`supabase/schema.sql`](supabase/schema.sql) and
+is ready to run — one row per signed-in household (matching the app's
+"everyone shares one login" design), every other table scoped to it by
+`household_id`, and Row Level Security so a household can only ever see its
+own data. To stand up the database:
+
+1. Create a free project at [supabase.com](https://supabase.com) → New project.
+2. In the new project, go to **SQL Editor → New query**, paste the entire
+   contents of `supabase/schema.sql`, and click **Run**. It's safe to re-run
+   if you ever need to.
+3. Go to **Settings → API**, copy the **Project URL** and the **anon /
+   publishable** key.
+4. Copy `.env.example` to `.env` and fill in those two values as
+   `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+That's the database side done — tables + security rules exist, but the app
+still runs on mock data until the next step. What's left, to be requested
+separately: replacing `src/services/dataService.ts`'s in-memory functions
+with real Supabase calls, wiring real auth (Supabase's email/magic-link
+sign-in, one login per household) in place of the mock `login()`, connecting
+the CSV import + mapping engine to persisted data, and moving profile/
+household photo uploads from browser-only data URLs to Supabase Storage.
