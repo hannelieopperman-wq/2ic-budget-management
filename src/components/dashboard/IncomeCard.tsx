@@ -1,15 +1,17 @@
 import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 import { Card } from '../ui';
-import { INCOME_PLACEHOLDER } from '../../utils/currency';
+import { formatCurrency } from '../../utils/currency';
 
-/**
- * Income is deliberately masked. We never render a real salary figure — the
- * card shows the masked placeholder and communicates variance via state only.
- */
 export function IncomeCard({
+  expected,
+  received,
+  variance,
   belowExpected,
   showWarning,
 }: {
+  expected: number;
+  received: number;
+  variance: number;
   belowExpected: boolean;
   showWarning: boolean;
 }) {
@@ -23,11 +25,11 @@ export function IncomeCard({
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Figure label="Expected" value={INCOME_PLACEHOLDER} />
-        <Figure label="Received" value={INCOME_PLACEHOLDER} />
+        <Figure label="Expected" value={formatCurrency(expected)} />
+        <Figure label="Received" value={formatCurrency(received)} />
         <Figure
           label="Variance"
-          value={INCOME_PLACEHOLDER}
+          value={formatCurrency(variance)}
           icon={belowExpected ? TrendingDown : showWarning ? Minus : TrendingUp}
           tone={belowExpected ? 'coral' : 'sage'}
         />

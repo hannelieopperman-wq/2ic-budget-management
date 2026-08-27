@@ -76,8 +76,8 @@ belongs here.
   deliberately unmapped ones so you can see the "needs attention" flows
 - 2 income sources
 
-**Income is never hardcoded as a real figure.** Wherever a salary might
-appear, the UI shows the masked placeholder `R 00 000,00`.
+Income figures (Dashboard, Pools, Reports, exports) display real amounts —
+income is not masked or redacted anywhere in the app.
 
 ## Cycle logic
 
@@ -92,11 +92,9 @@ range (`start_date <= date <= end_date`), never by calendar month. See
 ## Income logic
 
 Income is entered manually per income source (`src/pages/Settings.tsx` →
-`IncomeSources`). `income_received` is intended to be derived from positive
-transactions mapped to the Income pool within the active cycle (Phase 2 will
-compute this against real data; the mock cycles carry illustrative
-`income_expected` / `income_received` numbers so the dashboard's variance and
-warning logic can be exercised without ever displaying a real number).
+`IncomeSources`). `income_received` is derived from positive transactions
+mapped to the Income pool within the active cycle. Real figures are shown
+throughout (Dashboard, Pools, Reports, exports) — nothing is masked.
 
 ## Mapping order
 

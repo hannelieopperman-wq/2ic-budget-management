@@ -61,7 +61,13 @@ export function Dashboard() {
 
         {alerts.length > 0 && <AlertStrip alerts={alerts} />}
 
-        <IncomeCard belowExpected={belowExpected} showWarning={showIncomeWarning} />
+        <IncomeCard
+          expected={data.incomeExpected}
+          received={data.incomeReceived}
+          variance={data.variance}
+          belowExpected={belowExpected}
+          showWarning={showIncomeWarning}
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           {data.orderedAccounts.map((account, i) => (

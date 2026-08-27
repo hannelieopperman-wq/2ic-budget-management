@@ -18,9 +18,6 @@ export function formatAmount(value: number): string {
   return zaNumber.format(safe);
 }
 
-/** The masked placeholder used anywhere a real salary might otherwise appear. */
-export const INCOME_PLACEHOLDER = 'R 00 000,00';
-
 /** Format a percentage as a whole number, clamped to [0, 999]. */
 export function formatPercent(value: number): string {
   if (!Number.isFinite(value)) return '0%';

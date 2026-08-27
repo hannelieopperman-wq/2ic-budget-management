@@ -19,15 +19,14 @@ export interface MemberSpendPoint {
 
 export interface IncomeTrendPoint {
   cycleLabel: string;
-  pctReceived: number; // 0-100+, never a rand value — income stays masked
+  Expected: number;
+  Received: number;
   [key: string]: string | number;
 }
 
 /**
  * Cross-cycle report data, honouring the active member view (Combined or a
- * specific profile) the same way the dashboard does. Income is intentionally
- * reported as "% of expected received" rather than a rand figure — reports
- * respect the same never-show-a-real-salary-figure rule as the rest of the app.
+ * specific profile) the same way the dashboard does.
  */
 export function useReportsData(cycleRange: Cycle[]) {
   const { pools, transactions, accounts, members, incomeSources, activeMemberId } = useApp();
@@ -91,17 +90,14 @@ export function useReportsData(cycleRange: Cycle[]) {
       if (shared > 0) memberBreakdown.push({ name: 'Shared', value: Math.round(shared * 100) / 100, color: '#F6B84E' });
     }
 
-    // Income tracking as a percentage only — never a rand figure. Expected
-    // comes from Income Sources (same for every cycle unless sources change);
-    // received is computed per cycle from actual incoming transactions.
+    // Expected comes from Income Sources (same for every cycle unless sources
+    // change); received is computed per cycle from actual incoming transactions.
     const expectedForRange = computeIncomeExpected(incomeSources, accounts, activeMemberId);
-    const incomeTrend: IncomeTrendPoint[] = cycleRange.map((cycle) => {
-      const received = computeIncomeReceived(transactions, pools, accounts, cycle, activeMemberId);
-      return {
-        cycleLabel: cycle.label,
-        pctReceived: expectedForRange > 0 ? Math.round((received / expectedForRange) * 100) : 0,
-      };
-    });
+    const incomeTrend: IncomeTrendPoint[] = cycleRange.map((cycle) => ({
+      cycleLabel: cycle.label,
+      Expected: Math.round(expectedForRange * 100) / 100,
+      Received: Math.round(computeIncomeReceived(transactions, pools, accounts, cycle, activeMemberId) * 100) / 100,
+    }));
 
     const totalSpentInRange = cycleRange.reduce(
       (sum, cycle) => sum + visiblePools.reduce((s, pool) => s + spentThisCycle(pool, visibleTransactions, cycle), 0),

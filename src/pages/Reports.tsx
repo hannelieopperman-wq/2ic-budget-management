@@ -98,8 +98,7 @@ export function Reports() {
             </Button>
           </div>
           <p className="mt-3 text-xs text-plum-soft">
-            Exports run entirely on your device — nothing is uploaded. Income figures are left out of every
-            export, the same as everywhere else in the app.
+            Exports run entirely on your device — nothing is uploaded.
           </p>
         </Card>
 
@@ -134,8 +133,8 @@ export function Reports() {
         <TrendLineCard
           title="Income received vs expected"
           data={incomeTrend}
-          seriesKeys={['pctReceived']}
-          yFormat="percent"
+          seriesKeys={['Expected', 'Received']}
+          yFormat="currency"
         />
       </div>
     </AppShell>

@@ -80,8 +80,7 @@ export function useCycleData() {
 
     // Computed live from Income Sources + actual transactions — not a static
     // demo field — so entering real income actually drives the app's
-    // behaviour (warnings, insights), even though the figures stay masked
-    // wherever they're displayed.
+    // behaviour (warnings, insights) as well as what's displayed.
     const incomeExpected = computeIncomeExpected(incomeSources, accounts, activeMemberId);
     const incomeReceived = computeIncomeReceived(transactions, pools, accounts, activeCycle, activeMemberId);
     const variance = incomeReceived - incomeExpected;

@@ -5,9 +5,7 @@ import { spentThisCycle, remaining, pctUsed } from './calculations';
 
 // ---------------------------------------------------------------------------
 // Client-side export. Everything here runs in the browser against data
-// already in memory — nothing is sent anywhere. Income amounts are
-// intentionally excluded/masked in every export, mirroring the in-app rule
-// that a real salary figure is never displayed.
+// already in memory — nothing is sent anywhere.
 //
 // jsPDF and xlsx are loaded lazily (dynamic import) so their ~1MB combined
 // weight only downloads when someone actually clicks an export button,
@@ -25,12 +23,6 @@ export interface ReportExportInput {
   poolLabel: (id: string | null) => string;
 }
 
-/** Redact income-pool transactions before they ever reach an export. */
-function redactIncome(transactions: Transaction[], pools: Pool[]): Transaction[] {
-  const incomePoolIds = new Set(pools.filter((p) => p.name.toLowerCase() === 'income').map((p) => p.id));
-  return transactions.filter((t) => !(t.direction === 'in' && t.pool_id && incomePoolIds.has(t.pool_id)));
-}
-
 export async function exportReportToPDF(input: ReportExportInput) {
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
     import('jspdf'),
@@ -38,7 +30,6 @@ export async function exportReportToPDF(input: ReportExportInput) {
   ]);
   const { viewLabel, cycleRange, pools, transactions, commitments, accountLabel, poolLabel } = input;
   const doc = new jsPDF();
-  const safeTx = redactIncome(transactions, pools);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
@@ -49,9 +40,8 @@ export async function exportReportToPDF(input: ReportExportInput) {
   doc.setFontSize(10);
   doc.setTextColor(122, 82, 102);
   doc.text(`${viewLabel} · ${cycleRange[0]?.label ?? ''} to ${cycleRange[cycleRange.length - 1]?.label ?? ''}`, 14, 25);
-  doc.text('Income figures are not included in exports.', 14, 30);
 
-  let y = 40;
+  let y = 35;
 
   for (const cycle of cycleRange) {
     doc.setFont('helvetica', 'bold');
@@ -63,9 +53,9 @@ export async function exportReportToPDF(input: ReportExportInput) {
     const poolRows = pools.map((p) => [
       p.name,
       formatCurrency(p.monthly_budget),
-      formatCurrency(spentThisCycle(p, safeTx, cycle)),
-      formatCurrency(remaining(p, safeTx, cycle)),
-      `${Math.round(pctUsed(p, safeTx, cycle) * 100)}%`,
+      formatCurrency(spentThisCycle(p, transactions, cycle)),
+      formatCurrency(remaining(p, transactions, cycle)),
+      `${Math.round(pctUsed(p, transactions, cycle) * 100)}%`,
     ]);
 
     autoTable(doc, {
@@ -109,7 +99,6 @@ export async function exportReportToPDF(input: ReportExportInput) {
 export async function exportReportToExcel(input: ReportExportInput) {
   const XLSX = await import('xlsx');
   const { viewLabel, cycleRange, pools, transactions, commitments, accountLabel, poolLabel } = input;
-  const safeTx = redactIncome(transactions, pools);
   const wb = XLSX.utils.book_new();
 
   // Pool summary sheet — one row per pool per cycle.
@@ -120,17 +109,17 @@ export async function exportReportToExcel(input: ReportExportInput) {
         Cycle: cycle.label,
         Pool: p.name,
         Budget: p.monthly_budget,
-        Spent: Math.round(spentThisCycle(p, safeTx, cycle) * 100) / 100,
-        Remaining: Math.round(remaining(p, safeTx, cycle) * 100) / 100,
-        'Pct Used': Math.round(pctUsed(p, safeTx, cycle) * 100),
+        Spent: Math.round(spentThisCycle(p, transactions, cycle) * 100) / 100,
+        Remaining: Math.round(remaining(p, transactions, cycle) * 100) / 100,
+        'Pct Used': Math.round(pctUsed(p, transactions, cycle) * 100),
       });
     }
   }
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(poolRows), 'Pool Summary');
 
-  // Transactions sheet — spending only, income redacted.
+  // Transactions sheet.
   const cycleIds = new Set(cycleRange.map((c) => c.id));
-  const txRows = safeTx
+  const txRows = transactions
     .filter((t) => cycleIds.has(t.cycle))
     .map((t) => ({
       Date: formatDate(t.date),
@@ -155,7 +144,7 @@ export async function exportReportToExcel(input: ReportExportInput) {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(comRows), 'Commitments');
 
   // A tiny cover sheet noting scope, placed first.
-  const cover = [{ Report: '2IC Budget Management Report', View: viewLabel, Range: `${cycleRange[0]?.label ?? ''} – ${cycleRange[cycleRange.length - 1]?.label ?? ''}`, Note: 'Income figures are not included in exports.' }];
+  const cover = [{ Report: '2IC Budget Management Report', View: viewLabel, Range: `${cycleRange[0]?.label ?? ''} – ${cycleRange[cycleRange.length - 1]?.label ?? ''}` }];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cover), 'Overview');
   // Move cover sheet to the front.
   wb.SheetNames.unshift(wb.SheetNames.splice(wb.SheetNames.indexOf('Overview'), 1)[0]);

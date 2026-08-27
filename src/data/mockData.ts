@@ -12,9 +12,8 @@ import type {
 
 // ---------------------------------------------------------------------------
 // MOCK DATA — clearly fictional. No real personal information.
-// Income is masked (income_expected/received here are illustrative demo
-// figures used only to make the allocation maths render; the UI shows
-// "R 00 000,00" wherever a real salary might appear).
+// income_expected/received here are illustrative demo figures only, used to
+// make the allocation maths render for the local mock-data fallback.
 //
 // This dataset demonstrates a two-member household with sample profiles
 // "Alex" and "Jordan" — placeholder names only, renamed freely per household

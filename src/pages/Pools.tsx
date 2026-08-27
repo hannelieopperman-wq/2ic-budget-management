@@ -6,7 +6,7 @@ import { Button, Card, Modal, Input, Select, EmptyState, Badge } from '../compon
 import { useApp } from '../store/AppStore';
 import { useCycleData } from '../hooks/useCycleData';
 import { totalAllocated, unallocated } from '../utils/calculations';
-import { INCOME_PLACEHOLDER, formatCurrency } from '../utils/currency';
+import { formatCurrency } from '../utils/currency';
 import type { Pool, PoolType } from '../types/budget';
 
 const emptyPool = (): Pool => ({
@@ -64,7 +64,7 @@ export function Pools() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-plum-soft">Expected income</p>
-            <p className="tnum mt-1 font-serif text-xl text-plum-ink">{INCOME_PLACEHOLDER}</p>
+            <p className="tnum mt-1 font-serif text-xl text-plum-ink">{formatCurrency(incomeExpected)}</p>
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-plum-soft">Total allocated</p>
@@ -80,7 +80,7 @@ export function Pools() {
           </div>
         </div>
         <p className="mt-3 text-xs text-plum-soft">
-          Unallocated is expected income minus the sum of your pool budgets. Income shown masked.
+          Unallocated is expected income minus the sum of your pool budgets.
         </p>
       </Card>
 
