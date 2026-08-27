@@ -2,7 +2,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Ca
 import { Card } from '../ui';
 import { formatCurrency } from '../../utils/currency';
 
-const PALETTE = ['#D98CA0', '#A8C6A1', '#D9BE86', '#E38B7B', '#5B3A4B', '#7A5266'];
+const PALETTE = ['#FF6F61', '#20B7A4', '#F6B84E', '#E2483A', '#22314F', '#48597A'];
 
 export function TrendLineCard({
   title,
@@ -27,10 +27,10 @@ export function TrendLineCard({
         <div style={{ width: '100%', height: 260 }}>
           <ResponsiveContainer>
             <LineChart data={data} margin={{ left: 4, right: 12, top: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F7E3E6" vertical={false} />
-              <XAxis dataKey="cycleLabel" tick={{ fontSize: 11, fill: '#7A5266' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={fmt} tick={{ fontSize: 11, fill: '#7A5266' }} axisLine={false} tickLine={false} width={yFormat === 'currency' ? 64 : 40} />
-              <Tooltip formatter={(v) => fmt(Number(v) || 0)} contentStyle={{ borderRadius: 12, border: '1px solid #F7E3E6', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F6EAE0" vertical={false} />
+              <XAxis dataKey="cycleLabel" tick={{ fontSize: 11, fill: '#48597A' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={fmt} tick={{ fontSize: 11, fill: '#48597A' }} axisLine={false} tickLine={false} width={yFormat === 'currency' ? 64 : 40} />
+              <Tooltip formatter={(v) => fmt(Number(v) || 0)} contentStyle={{ borderRadius: 12, border: '1px solid #F6EAE0', fontSize: 12 }} />
               {seriesKeys.length > 1 && <Legend wrapperStyle={{ fontSize: 12 }} />}
               {seriesKeys.map((key, i) => (
                 <Line

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Pencil, Plus, Trash2, User, Check, Upload, X } from 'lucide-react';
+import { Pencil, Plus, Trash2, User, Check, Upload, X, Home } from 'lucide-react';
 import { Card, Modal, Input, Select, Button, EmptyState } from '../ui';
 import { MemberAvatar } from '../ui/MemberAvatar';
 import { useApp } from '../../store/AppStore';
@@ -19,12 +19,41 @@ function readFileAsDataUrl(file: File): Promise<string> {
 }
 
 export function MembersSettings() {
-  const { members, householdName, setHouseholdName, addMember, updateMember, removeMember } = useApp();
+  const {
+    members,
+    householdName,
+    setHouseholdName,
+    householdAvatarUrl,
+    setHouseholdAvatarUrl,
+    addMember,
+    updateMember,
+    removeMember,
+  } = useApp();
   const [editing, setEditing] = useState<Member | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [nameDraft, setNameDraft] = useState(householdName);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const onHouseholdAvatarChosen = async (file: File | undefined) => {
+    if (!file) return;
+    setAvatarError(null);
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file.');
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setAvatarError('That image is a bit large — please choose one under 3MB.');
+      return;
+    }
+    try {
+      setHouseholdAvatarUrl(await readFileAsDataUrl(file));
+    } catch {
+      setAvatarError('Could not read that file — please try another image.');
+    }
+  };
 
   const openNew = () => {
     setEditing(emptyMember());
@@ -65,9 +94,41 @@ export function MembersSettings() {
   return (
     <Card className="p-6 animate-slide-up">
       <div className="mb-5">
-        <h2 className="font-serif text-lg text-plum-ink">Household name</h2>
-        <p className="mt-0.5 mb-3 text-xs text-plum-soft">Shown as your Combined view name — e.g. "Joubert Family".</p>
-        <div className="flex gap-2">
+        <h2 className="font-serif text-lg text-plum-ink">Household</h2>
+        <p className="mt-0.5 mb-3 text-xs text-plum-soft">
+          Your household name and picture — shown on the sign-in screen and in the sidebar.
+        </p>
+        <div className="flex items-center gap-4">
+          {householdAvatarUrl ? (
+            <img src={householdAvatarUrl} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover shadow-soft" />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-plum shadow-soft">
+              <Home size={24} className="text-cream" strokeWidth={2} />
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => avatarInputRef.current?.click()}>
+                <Upload size={15} /> Upload picture
+              </Button>
+              {householdAvatarUrl && (
+                <Button variant="ghost" onClick={() => setHouseholdAvatarUrl(null)}>
+                  <X size={15} /> Remove
+                </Button>
+              )}
+            </div>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => onHouseholdAvatarChosen(e.target.files?.[0])}
+            />
+            <p className="text-xs text-plum-soft">JPG or PNG, under 3MB. Without one, a plain house mark is shown instead.</p>
+            {avatarError && <p className="text-xs text-coral-deep">{avatarError}</p>}
+          </div>
+        </div>
+        <div className="mt-4 flex gap-2">
           <input
             value={nameDraft}
             onChange={(e) => setNameDraft(e.target.value)}

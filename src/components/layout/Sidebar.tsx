@@ -1,20 +1,25 @@
 import { NavLink } from 'react-router-dom';
-import { CreditCard, LogOut } from 'lucide-react';
+import { CreditCard, Home, LogOut } from 'lucide-react';
 import { sidebarItems } from './navItems';
 import { useApp } from '../../store/AppStore';
-import { assetUrl } from '../../utils/assetUrl';
 
 export function Sidebar() {
-  const { logout, householdName } = useApp();
+  const { logout, householdName, householdAvatarUrl } = useApp();
   return (
     <aside className="hidden lg:flex lg:w-64 xl:w-72 shrink-0 flex-col border-r border-blush/50 bg-cream-deep/60 px-4 py-6">
       <div className="mb-8 px-3">
         <div className="flex items-center gap-2.5">
-          <img
-            src={assetUrl('brand/couple-avatar.png')}
-            alt=""
-            className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-teal/20"
-          />
+          {householdAvatarUrl ? (
+            <img
+              src={householdAvatarUrl}
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-teal/20"
+            />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-plum ring-2 ring-teal/20">
+              <Home size={16} className="text-cream" strokeWidth={2} />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="font-serif text-lg leading-tight text-teal">
               2IC <span className="text-coral">Budget</span>

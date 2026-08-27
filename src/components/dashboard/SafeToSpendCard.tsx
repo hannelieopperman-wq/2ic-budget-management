@@ -11,12 +11,12 @@ export function SafeToSpendCard({ amount, cycleLabel }: { amount: number; cycleL
       <div
         aria-hidden
         className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full opacity-70 blur-2xl"
-        style={{ background: 'radial-gradient(circle, rgba(217,140,160,0.55), transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(255,111,97,0.55), transparent 70%)' }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full opacity-50 blur-2xl"
-        style={{ background: 'radial-gradient(circle, rgba(217,190,134,0.4), transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(246,184,78,0.4), transparent 70%)' }}
       />
 
       <div className="relative">

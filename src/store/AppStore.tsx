@@ -39,6 +39,9 @@ interface AppState {
   members: Member[];
   householdName: string;
   setHouseholdName: (name: string) => void;
+  /** Data URL of an uploaded household photo/logo, or null to use the default mark. */
+  householdAvatarUrl: string | null;
+  setHouseholdAvatarUrl: (url: string | null) => void;
   pools: Pool[];
   commitments: Commitment[];
   rules: Rule[];
@@ -91,6 +94,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authed, setAuthed] = useState(false);
   const [members, setMembers] = useState<Member[]>(mockMembers);
   const [householdName, setHouseholdName] = useState<string>(DEFAULT_HOUSEHOLD_NAME);
+  const [householdAvatarUrl, setHouseholdAvatarUrl] = useState<string | null>(null);
   const [pools, setPools] = useState<Pool[]>(mockPools);
   const [commitments, setCommitments] = useState<Commitment[]>(mockCommitments);
   const [rules, setRules] = useState<Rule[]>(mockRules);
@@ -228,6 +232,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     members,
     householdName,
     setHouseholdName,
+    householdAvatarUrl,
+    setHouseholdAvatarUrl,
     pools,
     commitments,
     rules,

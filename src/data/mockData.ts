@@ -16,15 +16,17 @@ import type {
 // figures used only to make the allocation maths render; the UI shows
 // "R 00 000,00" wherever a real salary might appear).
 //
-// This dataset demonstrates a two-member household: "You" and "Husband".
-// Shared/joint items (accounts, pools) use member_id: null and are visible
-// in every view. Everything else is owned by whichever account it belongs to.
+// This dataset demonstrates a two-member household with sample profiles
+// "Alex" and "Jordan" — placeholder names only, renamed freely per household
+// on /settings. Shared/joint items (accounts, pools) use member_id: null and
+// are visible in every view. Everything else is owned by whichever account
+// it belongs to.
 // ---------------------------------------------------------------------------
 
 // ---- Household members ------------------------------------------------------
 export const mockMembers: Member[] = [
-  { id: 'mem_her', name: 'You', color: 'rose', avatarUrl: 'brand/her-avatar.png' },
-  { id: 'mem_him', name: 'Husband', color: 'sage', avatarUrl: 'brand/him-avatar.png' },
+  { id: 'mem_her', name: 'Alex', color: 'rose', avatarUrl: null },
+  { id: 'mem_him', name: 'Jordan', color: 'sage', avatarUrl: null },
 ];
 
 export const DEFAULT_HOUSEHOLD_NAME = 'Our Household';
@@ -82,7 +84,7 @@ export const mockAccounts: Account[] = [
   },
   {
     id: 'acc_cheque_him',
-    label: "Husband's Cheque",
+    label: "Jordan's Cheque",
     kind: 'cheque',
     current_balance: 9200.0,
     as_of_date: '2026-08-25',
@@ -90,7 +92,7 @@ export const mockAccounts: Account[] = [
   },
   {
     id: 'acc_credit_him',
-    label: "Husband's Credit Card",
+    label: "Jordan's Credit Card",
     kind: 'credit',
     current_balance: -850.0,
     as_of_date: '2026-08-25',
@@ -116,9 +118,9 @@ export const mockPools: Pool[] = [
   { id: 'pool_eating_out', name: 'Eating Out', type: 'variable', monthly_budget: 2000, reserve_as_essential: false, sort_order: 6, member_id: MEM_HER },
   { id: 'pool_personal', name: 'Personal Care', type: 'variable', monthly_budget: 1500, reserve_as_essential: false, sort_order: 7, member_id: MEM_HER },
   { id: 'pool_kids', name: 'Kids & School', type: 'variable', monthly_budget: 2500, reserve_as_essential: false, sort_order: 8, member_id: null },
-  { id: 'pool_petrol_him', name: 'His Petrol', type: 'variable', monthly_budget: 1500, reserve_as_essential: true, sort_order: 9, member_id: MEM_HIM },
-  { id: 'pool_subs_him', name: 'His Subscriptions', type: 'variable', monthly_budget: 400, reserve_as_essential: false, sort_order: 10, member_id: MEM_HIM },
-  { id: 'pool_hobbies_him', name: 'His Hobbies', type: 'variable', monthly_budget: 1000, reserve_as_essential: false, sort_order: 11, member_id: MEM_HIM },
+  { id: 'pool_petrol_him', name: "Jordan's Petrol", type: 'variable', monthly_budget: 1500, reserve_as_essential: true, sort_order: 9, member_id: MEM_HIM },
+  { id: 'pool_subs_him', name: "Jordan's Subscriptions", type: 'variable', monthly_budget: 400, reserve_as_essential: false, sort_order: 10, member_id: MEM_HIM },
+  { id: 'pool_hobbies_him', name: "Jordan's Hobbies", type: 'variable', monthly_budget: 1000, reserve_as_essential: false, sort_order: 11, member_id: MEM_HIM },
   { id: 'pool_income', name: 'Income', type: 'excluded', monthly_budget: 0, reserve_as_essential: false, sort_order: 20, member_id: null },
   { id: 'pool_transfers', name: 'Transfers / CC Payment', type: 'excluded', monthly_budget: 0, reserve_as_essential: false, sort_order: 21, member_id: null },
 ];
@@ -235,24 +237,24 @@ export const mockRules: Rule[] = ruleSeed.map(([search_term, pool_id], i) => ({
 export const mockTransactions: Transaction[] = [
   // Income
   { id: 'tx_1', date: '2026-08-25', account_id: 'acc_cheque', description: 'SALARY DEPOSIT EMPLOYER PTY LTD', merchant: 'Salary', amount: 42000, pool_id: 'pool_income', cycle: 'cyc_2026_08', direction: 'in', mapped_by: 'rule' },
-  { id: 'tx_1h', date: '2026-08-25', account_id: 'acc_cheque_him', description: 'SALARY DEPOSIT HIS EMPLOYER LTD', merchant: 'Salary', amount: 26000, pool_id: 'pool_income', cycle: 'cyc_2026_08', direction: 'in', mapped_by: 'rule' },
-  // Groceries (her)
+  { id: 'tx_1h', date: '2026-08-25', account_id: 'acc_cheque_him', description: 'SALARY DEPOSIT JORDAN EMPLOYER LTD', merchant: 'Salary', amount: 26000, pool_id: 'pool_income', cycle: 'cyc_2026_08', direction: 'in', mapped_by: 'rule' },
+  // Groceries (Alex)
   { id: 'tx_2', date: '2026-08-26', account_id: 'acc_credit', description: 'POS PURCHASE WOOLWORTHS SANDTON 4471', merchant: 'Woolworths Sandton', amount: -1240.55, pool_id: 'pool_groceries', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   { id: 'tx_3', date: '2026-08-29', account_id: 'acc_credit', description: 'POS PURCHASE CHECKERS HYPER 8821', merchant: 'Checkers Hyper', amount: -1899.9, pool_id: 'pool_groceries', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   { id: 'tx_4', date: '2026-09-03', account_id: 'acc_credit', description: 'POS PURCHASE PICK N PAY FAMILY 2210', merchant: 'Pick N Pay Family', amount: -2100.0, pool_id: 'pool_groceries', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
-  // Petrol (her)
+  // Petrol (Alex)
   { id: 'tx_5', date: '2026-08-27', account_id: 'acc_cheque', description: 'POS PURCHASE ENGEN GARAGE 1123', merchant: 'Engen Garage', amount: -950.0, pool_id: 'pool_petrol', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   { id: 'tx_6', date: '2026-09-05', account_id: 'acc_cheque', description: 'POS PURCHASE SHELL ULTRA CITY 9987', merchant: 'Shell Ultra City', amount: -925.0, pool_id: 'pool_petrol', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
-  // Subscriptions (her)
+  // Subscriptions (Alex)
   { id: 'tx_7', date: '2026-08-30', account_id: 'acc_credit', description: 'NETFLIX.COM SUBSCRIPTION', merchant: 'Netflix', amount: -199.0, pool_id: 'pool_subs', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'commitment' },
   { id: 'tx_8', date: '2026-09-01', account_id: 'acc_credit', description: 'SPOTIFY AB STOCKHOLM', merchant: 'Spotify AB Stockholm', amount: -119.0, pool_id: 'pool_subs', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'commitment' },
   { id: 'tx_9', date: '2026-09-02', account_id: 'acc_credit', description: 'DSTV DEBIT ORDER 887766', merchant: 'Dstv', amount: -882.0, pool_id: 'pool_subs', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   // Insurance (joint, medical aid already paid)
   { id: 'tx_10', date: '2026-09-01', account_id: 'acc_cheque', description: 'DEBIT ORDER MEDICAL AID SCHEME 00099', merchant: 'Medical Aid Scheme', amount: -3100.0, pool_id: 'pool_insurance', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'commitment' },
-  // Eating out (her)
+  // Eating out (Alex)
   { id: 'tx_11', date: '2026-08-28', account_id: 'acc_credit', description: 'POS PURCHASE NANDOS MENLYN 3321', merchant: 'Nandos Menlyn', amount: -345.0, pool_id: 'pool_eating_out', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   { id: 'tx_12', date: '2026-09-04', account_id: 'acc_credit', description: 'UBER EATS AMSTERDAM', merchant: 'Uber Eats Amsterdam', amount: -289.5, pool_id: 'pool_eating_out', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
-  // Personal care (her)
+  // Personal care (Alex)
   { id: 'tx_13', date: '2026-08-31', account_id: 'acc_credit', description: 'POS PURCHASE CLICKS PHARMACY 5567', merchant: 'Clicks Pharmacy', amount: -420.0, pool_id: 'pool_personal', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   // Transfers (excluded — CC payment, her)
   { id: 'tx_14', date: '2026-09-06', account_id: 'acc_cheque', description: 'CREDIT CARD PAYMENT TRANSFER', merchant: 'Credit Card Payment', amount: -5000.0, pool_id: 'pool_transfers', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
@@ -264,7 +266,7 @@ export const mockTransactions: Transaction[] = [
   { id: 'tx_19', date: '2026-09-06', account_id: 'acc_credit', description: 'POS PURCHASE MARKET STALL 0091', merchant: 'Market Stall', amount: -150.0, pool_id: null, cycle: 'cyc_2026_08', direction: 'out', mapped_by: null },
   { id: 'tx_20', date: '2026-09-07', account_id: 'acc_cheque', description: 'ATM WITHDRAWAL BRANCH 4410', merchant: 'ATM Withdrawal', amount: -600.0, pool_id: null, cycle: 'cyc_2026_08', direction: 'out', mapped_by: null },
   { id: 'tx_21', date: '2026-09-08', account_id: 'acc_credit', description: 'POS PURCHASE ONLINE STORE 2214', merchant: 'Online Store', amount: -430.0, pool_id: null, cycle: 'cyc_2026_08', direction: 'out', mapped_by: null },
-  // Husband's transactions
+  // Jordan's transactions
   { id: 'tx_h1', date: '2026-08-27', account_id: 'acc_cheque_him', description: 'POS PURCHASE ENGEN GARAGE 6612', merchant: 'Engen Garage', amount: -880.0, pool_id: 'pool_petrol_him', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
   { id: 'tx_h2', date: '2026-09-04', account_id: 'acc_credit_him', description: 'VIRGIN ACTIVE DEBIT ORDER', merchant: 'Virgin Active', amount: -799.0, pool_id: 'pool_hobbies_him', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'commitment' },
   { id: 'tx_h3', date: '2026-09-02', account_id: 'acc_credit_him', description: 'DSTV DEBIT ORDER 991122', merchant: 'Dstv', amount: -459.0, pool_id: 'pool_subs_him', cycle: 'cyc_2026_08', direction: 'out', mapped_by: 'rule' },
@@ -278,7 +280,7 @@ export const mockTransactions: Transaction[] = [
 export const mockIncomeSources: IncomeSource[] = [
   { id: 'inc_salary', label: 'Salary', amount_expected: 42000, day_of_month: 25, recurring: true, account_id: 'acc_cheque' },
   { id: 'inc_side', label: 'Side income', amount_expected: 0, day_of_month: 28, recurring: false, account_id: 'acc_cheque' },
-  { id: 'inc_salary_him', label: "Husband's Salary", amount_expected: 26000, day_of_month: 25, recurring: true, account_id: 'acc_cheque_him' },
+  { id: 'inc_salary_him', label: "Jordan's Salary", amount_expected: 26000, day_of_month: 25, recurring: true, account_id: 'acc_cheque_him' },
 ];
 
 // ---- Savings entries (Allan Gray, growth logged per cycle) -----------------

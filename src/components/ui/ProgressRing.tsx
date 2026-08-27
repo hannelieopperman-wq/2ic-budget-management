@@ -3,17 +3,17 @@ import { Check, AlertTriangle, TrendingUp, Sparkles } from 'lucide-react';
 import type { PoolHealth } from '../../utils/calculations';
 
 const healthColor: Record<PoolHealth, string> = {
-  under: '#A8C6A1', // sage
-  approaching: '#D98CA0', // dusty rose
-  reached: '#E38B7B', // muted coral
-  over: '#D06B58', // deeper coral
+  under: '#20B7A4', // sage (brand teal)
+  approaching: '#FF6F61', // rose (brand coral)
+  reached: '#E2483A', // coral (danger red)
+  over: '#C13327', // deeper danger red
 };
 
 const healthTrack: Record<PoolHealth, string> = {
-  under: '#EAF1E7',
-  approaching: '#F7E3E6',
-  reached: '#F8E1DB',
-  over: '#F5D8D0',
+  under: '#DFF3F0',
+  approaching: '#FFE9E5',
+  reached: '#FBDCD8',
+  over: '#F8CFC8',
 };
 
 export function ProgressRing({

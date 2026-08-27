@@ -24,8 +24,8 @@ export interface IncomeTrendPoint {
 }
 
 /**
- * Cross-cycle report data, honouring the active member view (Combined /
- * You / Husband) the same way the dashboard does. Income is intentionally
+ * Cross-cycle report data, honouring the active member view (Combined or a
+ * specific profile) the same way the dashboard does. Income is intentionally
  * reported as "% of expected received" rather than a rand figure — reports
  * respect the same never-show-a-real-salary-figure rule as the rest of the app.
  */
@@ -71,7 +71,7 @@ export function useReportsData(cycleRange: Cycle[]) {
 
     // Spending by member — whose account the money actually left, for the
     // latest cycle in range. Shared/joint accounts roll up as "Shared".
-    const memberColorMap: Record<string, string> = { rose: '#D98CA0', sage: '#82A97B', champagne: '#C4A566', coral: '#D06B58', plum: '#5B3A4B' };
+    const memberColorMap: Record<string, string> = { rose: '#FF6F61', sage: '#178F80', champagne: '#D99A2E', coral: '#C13327', plum: '#22314F' };
     const memberBreakdown: MemberSpendPoint[] = [];
     if (latestCycle) {
       const totals = new Map<string, number>();
@@ -85,10 +85,10 @@ export function useReportsData(cycleRange: Cycle[]) {
       }
       for (const m of members) {
         const v = totals.get(m.id) ?? 0;
-        if (v > 0) memberBreakdown.push({ name: m.name, value: Math.round(v * 100) / 100, color: memberColorMap[m.color] ?? '#5B3A4B' });
+        if (v > 0) memberBreakdown.push({ name: m.name, value: Math.round(v * 100) / 100, color: memberColorMap[m.color] ?? '#22314F' });
       }
       const shared = totals.get('shared') ?? 0;
-      if (shared > 0) memberBreakdown.push({ name: 'Shared', value: Math.round(shared * 100) / 100, color: '#D9BE86' });
+      if (shared > 0) memberBreakdown.push({ name: 'Shared', value: Math.round(shared * 100) / 100, color: '#F6B84E' });
     }
 
     // Income tracking as a percentage only — never a rand figure. Expected

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
+import { Home } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import { useApp } from '../store/AppStore';
 import { assetUrl } from '../utils/assetUrl';
 
 export function Login() {
-  const { login, householdName } = useApp();
+  const { login, householdName, householdAvatarUrl } = useApp();
   const [remember, setRemember] = useState(true);
 
   const onSubmit = (e: FormEvent) => {
@@ -19,21 +20,27 @@ export function Login() {
       <div
         aria-hidden
         className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full opacity-70 blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(247,227,230,0.9), transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(246,234,224,0.9), transparent 70%)' }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-32 -right-10 h-72 w-72 rounded-full opacity-50 blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(217,190,134,0.35), transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(246,184,78,0.35), transparent 70%)' }}
       />
 
       <div className="relative w-full max-w-sm animate-slide-up">
         <div className="mb-8 text-center">
-          <img
-            src={assetUrl('brand/couple-avatar.png')}
-            alt=""
-            className="mx-auto mb-4 h-20 w-20 rounded-full object-cover shadow-hero ring-4 ring-white"
-          />
+          {householdAvatarUrl ? (
+            <img
+              src={householdAvatarUrl}
+              alt=""
+              className="mx-auto mb-4 h-20 w-20 rounded-full object-cover shadow-hero ring-4 ring-white"
+            />
+          ) : (
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-plum shadow-hero ring-4 ring-white">
+              <Home size={30} className="text-cream" strokeWidth={2} />
+            </div>
+          )}
           <h1 className="font-serif text-3xl text-teal">
             2IC <span className="text-coral">Budget Management</span>
           </h1>

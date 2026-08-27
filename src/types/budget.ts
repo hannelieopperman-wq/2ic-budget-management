@@ -20,7 +20,7 @@ export interface Member {
   name: string;
   /** Semantic tone used for the fallback initial badge and dot indicators. */
   color: 'rose' | 'sage' | 'champagne' | 'coral' | 'plum';
-  /** Path under /public (e.g. "brand/her-avatar.png"), or null for an initials badge. */
+  /** Path under /public (e.g. "brand/member-1.png"), or null for an initials badge. */
   avatarUrl: string | null;
 }
 
