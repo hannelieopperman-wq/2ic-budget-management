@@ -78,7 +78,7 @@ export function ruleFromReassignment(
 ): Rule {
   const maxPriority = existingRules.reduce((m, r) => Math.max(m, r.priority), 0);
   return {
-    id: `rule_${Date.now()}`,
+    id: crypto.randomUUID(),
     priority: maxPriority + 1,
     search_term: searchTerm,
     pool_id: poolId,

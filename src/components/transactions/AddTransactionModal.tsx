@@ -60,7 +60,7 @@ export function AddTransactionModal({ open, onClose }: { open: boolean; onClose:
       cycles.find((c) => c.start_date === bounds.start) ?? cycles.find((c) => c.id === activeCycleId);
 
     const tx: Transaction = {
-      id: `manual_${Date.now()}`,
+      id: crypto.randomUUID(),
       date,
       account_id: accountId,
       description: description.trim(),

@@ -10,7 +10,7 @@ import { commitmentDateISO } from '../utils/calculations';
 import type { Commitment } from '../types/budget';
 
 const emptyCommitment = (poolId: string, accountId: string): Commitment => ({
-  id: `com_${Date.now()}`,
+  id: crypto.randomUUID(),
   item: '',
   pool_id: poolId,
   account_id: accountId,

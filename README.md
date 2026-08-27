@@ -1,9 +1,13 @@
-# 2IC Budget Management (Phase 1: Frontend / Mock Data)
+# 2IC Budget Management
 
-A personalised, calm envelope-budget app for two — Combined, Yours, and His
-views, built around 2IC's "Plan smarter. Spend wiser. Live easier." identity.
-This is **Phase 1**: a complete, fully navigable frontend running on **mock
-data**. No backend is connected yet.
+A personalised, calm envelope-budget app for a household — a Combined view
+plus one view per profile, built around 2IC's "Plan smarter. Spend wiser.
+Live easier." identity. Each household sets up its own name, profiles and
+photos from scratch; nothing here is tied to any one family.
+
+Runs against a real Supabase backend when `.env` is configured (see
+[Phase 2](#phase-2-live) below); without it, falls back to a fully navigable
+frontend on mock data — handy for local UI work with no backend at hand.
 
 ## Tech stack
 
@@ -20,7 +24,10 @@ npm run build     # production build to dist/
 npm run preview   # preview the production build locally
 ```
 
-The mock login accepts anything — click **Sign in** to enter the app.
+Without `.env` configured, the mock login accepts anything — click **Sign
+in** to enter the app. With `.env` configured (see below), sign-in is real
+Supabase auth — create a household account first via "New household? Create
+an account" on the sign-in screen.
 
 ## Deploying to GitHub Pages
 
@@ -33,6 +40,11 @@ push to `main` and publishes `dist/` via GitHub Pages.
    the repo, no changes are needed — it derives the base path at build time.
 4. The app uses `HashRouter`, so client-side routes work correctly on Pages
    without any server rewrite rules.
+5. To have the deployed site use real Supabase (not the mock-data fallback),
+   add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as repository
+   secrets: **Settings → Secrets and variables → Actions → New repository
+   secret**, same two values as your local `.env`. Left unset, the deployed
+   build just falls back to mock data, same as running locally with no `.env`.
 
 ## Environment variables
 
@@ -43,9 +55,11 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-These are **not used yet** — Phase 1 runs entirely on mock/local state. They
-exist so Phase 2 can be wired in without restructuring the app. Never put a
-Supabase **service-role** key in frontend code.
+Leave these blank to run entirely on mock/local state (no backend needed).
+Filled in, the app talks to that real Supabase project instead — see
+[Phase 2](#phase-2-live) below for setup. Never put a Supabase
+**service-role** key in frontend code — only the publishable/anon key
+belongs here.
 
 ## Mock data
 
@@ -142,27 +156,36 @@ fine and will be ignored automatically.
 - Whether the mock cycle/account/pool numbers feel representative enough to
   judge the UI, given real salary and balances are intentionally never shown.
 
-## Phase 2 (schema ready, wiring not started)
+## Phase 2 (live)
 
-The database schema lives at [`supabase/schema.sql`](supabase/schema.sql) and
-is ready to run — one row per signed-in household (matching the app's
-"everyone shares one login" design), every other table scoped to it by
-`household_id`, and Row Level Security so a household can only ever see its
-own data. To stand up the database:
+The app now runs against a real Supabase project when `.env` is configured —
+real email/password sign-up and sign-in (one login per household, matching
+the "everyone shares one login" design), every entity persisted, and
+household/profile photos uploaded to Supabase Storage. Without `.env`
+configured, the app falls back to the original Phase 1 mock-data behaviour
+unchanged (`isSupabaseConfigured` in `src/services/supabase.ts` is the
+switch) — handy for local UI work with no backend at hand.
+
+Setting up the database from scratch:
 
 1. Create a free project at [supabase.com](https://supabase.com) → New project.
-2. In the new project, go to **SQL Editor → New query**, paste the entire
-   contents of `supabase/schema.sql`, and click **Run**. It's safe to re-run
-   if you ever need to.
-3. Go to **Settings → API**, copy the **Project URL** and the **anon /
-   publishable** key.
+2. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**.
+   Then a second query with all of `supabase/storage.sql` → **Run** (sets up
+   the `avatars` Storage bucket). Both are safe to re-run.
+3. **Settings → API** (or the newer **Settings → API Keys** page) → copy the
+   **Project URL** and the **publishable** key.
 4. Copy `.env.example` to `.env` and fill in those two values as
    `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
-That's the database side done — tables + security rules exist, but the app
-still runs on mock data until the next step. What's left, to be requested
-separately: replacing `src/services/dataService.ts`'s in-memory functions
-with real Supabase calls, wiring real auth (Supabase's email/magic-link
-sign-in, one login per household) in place of the mock `login()`, connecting
-the CSV import + mapping engine to persisted data, and moving profile/
-household photo uploads from browser-only data URLs to Supabase Storage.
+A fresh household starts genuinely empty (no seeded members/pools/etc.) — the
+whole point of this rollout is letting a real family or friend group set up
+their own household from scratch via Settings, not inherit demo data. New
+sign-ups go through Supabase's default email-confirmation flow; if you want
+frictionless testing, Supabase dashboard → **Authentication → Providers →
+Email** has a toggle to disable "Confirm email".
+
+`src/services/dataService.ts` is the seam: every function checks
+`isSupabaseConfigured` and either talks to Postgres or falls back to the
+original mock-clone behaviour. `src/store/AppStore.tsx` fetches everything
+once per login and applies every mutation optimistically (instant locally,
+persisted in the background, rolled back on failure).

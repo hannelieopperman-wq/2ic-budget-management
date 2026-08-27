@@ -5,7 +5,7 @@ import { useApp } from '../../store/AppStore';
 import type { IncomeSource } from '../../types/budget';
 
 const emptySource = (accountId: string): IncomeSource => ({
-  id: `inc_${Date.now()}`,
+  id: crypto.randomUUID(),
   label: '',
   amount_expected: 0,
   day_of_month: 25,

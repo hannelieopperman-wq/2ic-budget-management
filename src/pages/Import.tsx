@@ -27,7 +27,7 @@ const kindIcon: Record<AccountKind, typeof Wallet> = {
 };
 
 export function Import() {
-  const { transactions, commitments, rules, cycles, pools, accounts, commitImport, updateAccount } = useApp();
+  const { transactions, commitments, rules, cycles, pools, accounts, commitImport } = useApp();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
@@ -64,18 +64,17 @@ export function Import() {
     const toCommit = prepared
       .filter((p) => !p.isDuplicate)
       .map(({ isDuplicate: _isDuplicate, balance: _balance, ...t }) => t);
-    commitImport(toCommit);
 
     // Bank CSVs almost always include a running balance column — use the
     // most recent one to keep the account balance accurate automatically,
-    // instead of asking for a manual re-type every time.
-    if (result?.latestBalance && selectedAccount) {
-      updateAccount({
-        ...selectedAccount,
-        current_balance: result.latestBalance.balance,
-        as_of_date: result.latestBalance.date,
-      });
-    }
+    // instead of asking for a manual re-type every time. Passed alongside the
+    // transactions so the whole import (insert + paid-flip + balance update)
+    // is one sequenced write, not a separate uncoordinated call after.
+    const accountUpdate =
+      result?.latestBalance && selectedAccount
+        ? { accountId: selectedAccount.id, balance: result.latestBalance.balance, asOfDate: result.latestBalance.date }
+        : null;
+    commitImport(toCommit, accountUpdate);
     setStep(4);
   };
 

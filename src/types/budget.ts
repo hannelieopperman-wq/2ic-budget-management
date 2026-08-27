@@ -11,6 +11,13 @@ export type MappedBy = 'commitment' | 'rule' | 'manual' | null;
 
 export type Direction = 'in' | 'out';
 
+/** The signed-in household itself — one row per Supabase auth user. */
+export interface Household {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
 /**
  * A household member. `member_id: null` elsewhere (on Account / Pool) means
  * "shared / joint" — visible and counted in every member's view, not just one.

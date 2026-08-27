@@ -15,7 +15,7 @@ export function Rules() {
   const ordered = [...rules].sort((a, b) => a.priority - b.priority);
 
   const openNew = () => {
-    setEditing({ id: `rule_${Date.now()}`, priority: rules.length + 1, search_term: '', pool_id: pools[0]?.id ?? '' });
+    setEditing({ id: crypto.randomUUID(), priority: rules.length + 1, search_term: '', pool_id: pools[0]?.id ?? '' });
     setIsNew(true);
   };
   const openEdit = (r: Rule) => {

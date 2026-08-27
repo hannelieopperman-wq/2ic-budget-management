@@ -32,9 +32,15 @@ jobs:
 
       - name: Build
         # VITE_BASE should match "/<repo-name>/" for project pages.
+        # The two VITE_SUPABASE_* values come from repo secrets (Settings ->
+        # Secrets and variables -> Actions) — the publishable/anon key is safe
+        # to expose in a public build, it's protected by RLS, not secrecy.
+        # Left unset, the deployed build simply falls back to mock data.
         run: npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

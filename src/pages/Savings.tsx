@@ -59,7 +59,7 @@ export function Savings() {
       updateSavingsEntry({ ...existingEntryThisCycle, contribution, closing_balance: closingBalance });
     } else {
       const entry: SavingsEntry = {
-        id: `sav_${Date.now()}`,
+        id: crypto.randomUUID(),
         account_id: selected.id,
         cycle_id: activeCycle.id,
         contribution,

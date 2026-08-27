@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Plus, Trash2, Wallet, CreditCard, PiggyBank, Landmark } from 'lucide-react';
+import { Pencil, Plus, Trash2, Wallet, CreditCard, PiggyBank, Landmark, AlertTriangle } from 'lucide-react';
 import { Card, Modal, Input, Select, Button, EmptyState } from '../ui';
 import { useApp } from '../../store/AppStore';
 import { formatCurrency } from '../../utils/currency';
@@ -21,7 +21,7 @@ const kindLabel: Record<AccountKind, string> = {
 };
 
 const emptyAccount = (memberId: string | null): Account => ({
-  id: `acc_${Date.now()}`,
+  id: crypto.randomUUID(),
   label: '',
   kind: 'savings',
   current_balance: 0,
@@ -30,9 +30,11 @@ const emptyAccount = (memberId: string | null): Account => ({
 });
 
 export function AccountSettings() {
-  const { accounts, members, updateAccount, addAccount, removeAccount } = useApp();
+  const { accounts, members, commitments, transactions, incomeSources, updateAccount, addAccount, removeAccount } =
+    useApp();
   const [editing, setEditing] = useState<Account | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<Account | null>(null);
 
   const memberName = (id: string | null) => (id ? members.find((m) => m.id === id)?.name : null);
 
@@ -50,6 +52,21 @@ export function AccountSettings() {
     else updateAccount(editing);
     setEditing(null);
   };
+
+  const askRemove = (a: Account) => setPendingRemove(a);
+  const confirmRemove = () => {
+    if (!pendingRemove) return;
+    removeAccount(pendingRemove.id);
+    setPendingRemove(null);
+    setEditing(null);
+  };
+  const pendingCounts = pendingRemove
+    ? {
+        commitments: commitments.filter((c) => c.account_id === pendingRemove.id).length,
+        transactions: transactions.filter((t) => t.account_id === pendingRemove.id).length,
+        income: incomeSources.filter((s) => s.account_id === pendingRemove.id).length,
+      }
+    : null;
 
   return (
     <Card className="p-6 animate-slide-up">
@@ -106,14 +123,7 @@ export function AccountSettings() {
           editing && (
             <div className="flex items-center justify-between gap-3">
               {!isNew ? (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    removeAccount(editing.id);
-                    setEditing(null);
-                  }}
-                  className="text-coral-deep"
-                >
+                <Button variant="ghost" onClick={() => askRemove(editing)} className="text-coral-deep">
                   <Trash2 size={16} /> Remove
                 </Button>
               ) : (
@@ -179,6 +189,49 @@ export function AccountSettings() {
                 based on cheque/current account cash.
               </p>
             )}
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={pendingRemove !== null}
+        onClose={() => setPendingRemove(null)}
+        title="Remove account?"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setPendingRemove(null)}>
+              Cancel
+            </Button>
+            <Button variant="warning" onClick={confirmRemove}>
+              <Trash2 size={16} /> Remove permanently
+            </Button>
+          </div>
+        }
+      >
+        {pendingRemove && pendingCounts && (
+          <div className="flex items-start gap-3">
+            <div className="rounded-full bg-coral/15 p-2 text-coral-deep">
+              <AlertTriangle size={18} />
+            </div>
+            <p className="text-sm text-plum">
+              This will permanently delete <strong className="text-plum-ink">{pendingRemove.label}</strong>
+              {pendingCounts.commitments + pendingCounts.transactions + pendingCounts.income > 0 ? (
+                <>
+                  {' '}
+                  and everything linked to it:{' '}
+                  {[
+                    pendingCounts.transactions > 0 && `${pendingCounts.transactions} transaction${pendingCounts.transactions === 1 ? '' : 's'}`,
+                    pendingCounts.commitments > 0 && `${pendingCounts.commitments} commitment${pendingCounts.commitments === 1 ? '' : 's'}`,
+                    pendingCounts.income > 0 && `${pendingCounts.income} income source${pendingCounts.income === 1 ? '' : 's'}`,
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
+                  . This can't be undone.
+                </>
+              ) : (
+                ". It isn't linked to any transactions, commitments or income sources yet, so nothing else will be affected."
+              )}
+            </p>
           </div>
         )}
       </Modal>

@@ -10,7 +10,7 @@ import { INCOME_PLACEHOLDER, formatCurrency } from '../utils/currency';
 import type { Pool, PoolType } from '../types/budget';
 
 const emptyPool = (): Pool => ({
-  id: `pool_${Date.now()}`,
+  id: crypto.randomUUID(),
   name: '',
   type: 'variable',
   monthly_budget: 0,

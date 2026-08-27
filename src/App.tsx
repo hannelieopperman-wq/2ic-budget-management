@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { AppProvider, useApp } from './store/AppStore';
+import { LoadingState } from './components/ui';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Pools } from './pages/Pools';
@@ -21,7 +22,16 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 function AppRoutes() {
-  const { authed } = useApp();
+  const { authed, authLoading, dataLoading } = useApp();
+
+  if (authLoading || (authed && dataLoading)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-cream">
+        <LoadingState label="Loading" />
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/login" element={authed ? <Navigate to="/" replace /> : <Login />} />

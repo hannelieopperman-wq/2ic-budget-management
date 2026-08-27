@@ -179,7 +179,7 @@ export function prepareImport(
   const seenInFile = new Set<string>();
   const paidCommitmentIds = new Set<string>();
 
-  const prepared: PreparedTransaction[] = rows.map((row, idx) => {
+  const prepared: PreparedTransaction[] = rows.map((row) => {
     const key = dupKey(row.date, row.amount, row.description);
     const isDuplicate = existingKeys.has(key) || seenInFile.has(key);
     seenInFile.add(key);
@@ -201,7 +201,7 @@ export function prepareImport(
     }
 
     return {
-      id: `imp_${Date.now()}_${idx}`,
+      id: crypto.randomUUID(),
       date: row.date,
       account_id: accountId,
       description: row.description,

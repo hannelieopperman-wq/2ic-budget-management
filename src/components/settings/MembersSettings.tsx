@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react';
-import { Pencil, Plus, Trash2, User, Check, Upload, X, Home } from 'lucide-react';
+import { Pencil, Plus, Trash2, User, Check, Upload, X, Home, AlertTriangle } from 'lucide-react';
 import { Card, Modal, Input, Select, Button, EmptyState } from '../ui';
 import { MemberAvatar } from '../ui/MemberAvatar';
 import { useApp } from '../../store/AppStore';
+import * as dataService from '../../services/dataService';
+import { isSupabaseConfigured } from '../../services/supabase';
 import type { Member } from '../../types/budget';
 
-const emptyMember = (): Member => ({ id: `mem_${Date.now()}`, name: '', color: 'rose', avatarUrl: null });
+const emptyMember = (): Member => ({ id: crypto.randomUUID(), name: '', color: 'rose', avatarUrl: null });
 
 const MAX_UPLOAD_BYTES = 3 * 1024 * 1024; // 3MB — plenty for a profile photo, keeps memory sane
 
@@ -21,6 +23,8 @@ function readFileAsDataUrl(file: File): Promise<string> {
 export function MembersSettings() {
   const {
     members,
+    pools,
+    accounts,
     householdName,
     setHouseholdName,
     householdAvatarUrl,
@@ -34,6 +38,9 @@ export function MembersSettings() {
   const [nameDraft, setNameDraft] = useState(householdName);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploadingHouseholdAvatar, setUploadingHouseholdAvatar] = useState(false);
+  const [uploadingMemberAvatar, setUploadingMemberAvatar] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<Member | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,10 +55,14 @@ export function MembersSettings() {
       setAvatarError('That image is a bit large — please choose one under 3MB.');
       return;
     }
+    setUploadingHouseholdAvatar(true);
     try {
-      setHouseholdAvatarUrl(await readFileAsDataUrl(file));
+      const url = isSupabaseConfigured ? await dataService.uploadHouseholdAvatar(file) : await readFileAsDataUrl(file);
+      setHouseholdAvatarUrl(url);
     } catch {
-      setAvatarError('Could not read that file — please try another image.');
+      setAvatarError('Could not upload that file — please try another image.');
+    } finally {
+      setUploadingHouseholdAvatar(false);
     }
   };
 
@@ -83,13 +94,28 @@ export function MembersSettings() {
       setUploadError('That image is a bit large — please choose one under 3MB.');
       return;
     }
+    setUploadingMemberAvatar(true);
     try {
-      const dataUrl = await readFileAsDataUrl(file);
-      setEditing({ ...editing, avatarUrl: dataUrl });
+      const url = isSupabaseConfigured
+        ? await dataService.uploadMemberAvatar(editing.id, file)
+        : await readFileAsDataUrl(file);
+      setEditing({ ...editing, avatarUrl: url });
     } catch {
-      setUploadError('Could not read that file — please try another image.');
+      setUploadError('Could not upload that file — please try another image.');
+    } finally {
+      setUploadingMemberAvatar(false);
     }
   };
+
+  const askRemove = (m: Member) => setPendingRemove(m);
+  const confirmRemove = () => {
+    if (!pendingRemove) return;
+    removeMember(pendingRemove.id);
+    setPendingRemove(null);
+    setEditing(null);
+  };
+  const pendingPoolCount = pendingRemove ? pools.filter((p) => p.member_id === pendingRemove.id).length : 0;
+  const pendingAccountCount = pendingRemove ? accounts.filter((a) => a.member_id === pendingRemove.id).length : 0;
 
   return (
     <Card className="p-6 animate-slide-up">
@@ -108,8 +134,8 @@ export function MembersSettings() {
           )}
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => avatarInputRef.current?.click()}>
-                <Upload size={15} /> Upload picture
+              <Button variant="secondary" onClick={() => avatarInputRef.current?.click()} disabled={uploadingHouseholdAvatar}>
+                <Upload size={15} /> {uploadingHouseholdAvatar ? 'Uploading…' : 'Upload picture'}
               </Button>
               {householdAvatarUrl && (
                 <Button variant="ghost" onClick={() => setHouseholdAvatarUrl(null)}>
@@ -176,7 +202,7 @@ export function MembersSettings() {
                   <Pencil size={15} />
                 </button>
                 <button
-                  onClick={() => removeMember(m.id)}
+                  onClick={() => askRemove(m)}
                   aria-label={`Remove ${m.name}`}
                   className="rounded-full p-1.5 text-plum-soft hover:bg-coral/15 hover:text-coral-deep"
                 >
@@ -196,14 +222,7 @@ export function MembersSettings() {
           editing && (
             <div className="flex items-center justify-between gap-3">
               {!isNew ? (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    removeMember(editing.id);
-                    setEditing(null);
-                  }}
-                  className="text-coral-deep"
-                >
+                <Button variant="ghost" onClick={() => askRemove(editing)} className="text-coral-deep">
                   <Trash2 size={16} /> Remove
                 </Button>
               ) : (
@@ -236,8 +255,8 @@ export function MembersSettings() {
                 <MemberAvatar member={editing} size={64} />
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2">
-                    <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                      <Upload size={15} /> Upload photo
+                    <Button variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={uploadingMemberAvatar}>
+                      <Upload size={15} /> {uploadingMemberAvatar ? 'Uploading…' : 'Upload photo'}
                     </Button>
                     {editing.avatarUrl && (
                       <Button variant="ghost" onClick={() => setEditing({ ...editing, avatarUrl: null })}>
@@ -263,17 +282,54 @@ export function MembersSettings() {
               value={editing.color}
               onChange={(e) => setEditing({ ...editing, color: e.target.value as Member['color'] })}
             >
-              <option value="rose">Dusty rose</option>
-              <option value="sage">Sage</option>
-              <option value="champagne">Champagne</option>
-              <option value="coral">Coral</option>
-              <option value="plum">Plum</option>
+              <option value="rose">Coral</option>
+              <option value="sage">Teal</option>
+              <option value="champagne">Gold</option>
+              <option value="coral">Red</option>
+              <option value="plum">Navy</option>
             </Select>
 
             <p className="rounded-2xl bg-blush-soft/60 px-4 py-3 text-xs text-plum-soft">
-              Accounts and pools not assigned to any profile are treated as shared/joint and always show up,
-              in every view. Uploaded photos stay in this browser session only until Supabase storage is
-              connected in Phase 2 — they won't survive a refresh yet, same as everything else in this demo.
+              Accounts and pools not assigned to any profile are treated as shared/joint and always show up
+              in every view.
+            </p>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={pendingRemove !== null}
+        onClose={() => setPendingRemove(null)}
+        title="Remove profile?"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setPendingRemove(null)}>
+              Cancel
+            </Button>
+            <Button variant="warning" onClick={confirmRemove}>
+              <Trash2 size={16} /> Remove
+            </Button>
+          </div>
+        }
+      >
+        {pendingRemove && (
+          <div className="flex items-start gap-3">
+            <div className="rounded-full bg-coral/15 p-2 text-coral-deep">
+              <AlertTriangle size={18} />
+            </div>
+            <p className="text-sm text-plum">
+              Remove <strong className="text-plum-ink">{pendingRemove.name}</strong>? This won't delete any data —
+              {pendingPoolCount > 0 || pendingAccountCount > 0 ? (
+                <>
+                  {' '}
+                  {pendingPoolCount > 0 && `${pendingPoolCount} pool${pendingPoolCount === 1 ? '' : 's'}`}
+                  {pendingPoolCount > 0 && pendingAccountCount > 0 && ' and '}
+                  {pendingAccountCount > 0 && `${pendingAccountCount} account${pendingAccountCount === 1 ? '' : 's'}`}{' '}
+                  currently theirs will just become shared/joint instead.
+                </>
+              ) : (
+                " they don't currently own any pools or accounts."
+              )}
             </p>
           </div>
         )}
